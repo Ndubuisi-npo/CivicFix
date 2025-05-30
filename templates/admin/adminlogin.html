@@ -1,0 +1,35 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Log-In</title>
+    <link rel="stylesheet" href="/static/users/login.css">
+</head>
+<body>
+    <a href="{{ url_for('admin') }}" class="home">← Back to Home</a>
+    <div class="login-wrapper">
+        <section class="login">
+            <h1>ADMIN LOG IN</h1>
+            <form action="" method="POST">
+                <div>
+                    <label for="unit-id">Unit-ID</label>
+                    <input type="text" id="unit-id" name="unit-id" placeholder="Enter your Unit-ID" required>
+                </div>
+                <div>
+                    <label for="nin">NIN</label>
+                    <input type="text" id="nin" name="nin" placeholder="Enter your National Identity Number" required>
+                </div>
+                <div>
+                    <label for="password">Password:</label>
+                    <input type="password" id="password" name="password" placeholder="Enter your password" required>
+                </div>
+                <button type="submit">Log In</button>
+                <p>Don't have an account? <a href="{{ url_for('adminregister') }}">Register here</a></p>
+            </form>
+            <div class="login-side-img-container">
+                <img src="/static/nig.png" alt="Nigeria" class="login-side-img">
+            </div>
+        </section>
+    </div>
+</body>
+</html>

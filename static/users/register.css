@@ -1,0 +1,174 @@
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: #e5e7eb;
+  font-family: 'Poppins', sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start; /* Don't center vertically */
+  overflow-y: auto; /* allow scroll */
+  padding: 4rem 0; /* space at top */
+}
+
+.home {
+  position: absolute;
+  top: 2rem;
+  left: 2rem;
+  display: flex;
+  align-items: center;
+  font-size: 1.1rem;
+  text-decoration: none;
+  color: #1976d2;
+  z-index: 10;
+  font-size: 1.5rem;
+  font-family: poppins, sans-serif;
+}
+
+
+.login {
+  padding: 3.5rem;
+  margin-bottom: 3.5rem; 
+  border-radius: 16px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  min-width: 1000px;
+  position: relative;
+  overflow: hidden;
+}
+
+.login-content {
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+form {
+  z-index: 2;
+  flex: 1;
+  position: relative;
+}
+
+.login h1 {
+  text-align: left;
+  margin-left: 9rem;
+  margin-bottom: 2rem;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 700;
+  letter-spacing: 2px;
+  opacity: 1;
+}
+
+
+.login label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  font-family: 'Poppins', sans-serif;
+  opacity: 1;
+}
+
+.login input {
+  display: block;
+  width: 40%;
+  min-width: 260px;
+  padding: 1rem;
+  border-radius: 30px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+  font-family: 'Poppins', sans-serif;
+  background: transparent;
+  margin-top: 0.2rem;
+  margin-bottom: 2.5rem;
+  opacity: 1;
+}
+
+.login button {
+  width: 40%;
+  min-width: 260px;
+  padding: 0.9rem;
+  background: #1976d2;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  font-weight: bold;
+  cursor: pointer;
+  margin-left: 0;         /* align left */
+  margin-top: 1rem;
+  display: block;
+  transition: background 0.2s;
+  opacity: 1;
+}
+
+.login button:hover {
+  background: #155a9c;
+}
+
+.login p {
+  width: 40%;
+  min-width: 260px;
+  text-align: left;      /* align left */
+  margin: 1.2rem 0 0 0;
+  font-size: 1rem;
+  padding-left: 0;       /* remove extra padding */
+  opacity: 1;
+}
+
+.login a {
+  color: #1976d2;
+  text-decoration: underline;
+  opacity: 1;
+}
+
+.login h1,
+.login label,
+.login input,
+.login button,
+.login p,
+.login a {
+  opacity: 1;
+  font-weight: 900;
+}
+
+.login-side-img-container {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 50%; /* controls how much space the image takes */
+  z-index: 1;
+  overflow: hidden;
+}
+
+
+.login-side-img {
+  height: 100%;
+  width: 100%;
+  object-fit: cover; /* makes the image fill its container nicely */
+  border-radius: 0 16px 16px 0;
+}
+
+.login form{
+    flex: 1;
+}
+
+
+.name-row {
+  display: flex;
+  gap: 2rem;
+  max-width: 40%; /* Prevents row from overlapping image */
+  min-width: 520px; /* Optional: matches min-width of inputs/buttons */
+  margin-bottom: 0.5rem; /* Reduced gap below name fields */
+}
+
+.name-field {
+  flex: 1;
+}
+
+.name-field input {
+  width: 100%; /* Fill the field column */
+}

@@ -1,0 +1,224 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CivicFix Admin</title>
+    <link rel="stylesheet" href="/static/admin/admin.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://cdn.lineicons.com/5.0/lineicons.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+</head>
+<body>
+       <nav class="navbar">
+            <div class="container">
+                <i class="fa fa-map-marker logo-icon" aria-hidden="true"></i> <span class="logo">CivicFix Admin</span>
+                <div class="nav-links">
+                    {% if session.get('admin_name') %}
+                    <div class="admin-user-info">
+                        <span class="admin-initials">
+                            {{ session['admin_name'].split()[0][0] }}{{ session['admin_name'].split()[-1][0] }}
+                        </span>
+                        <span class="admin-name">{{ session['admin_name'] }}</span>
+                        <a href="{{ url_for('adminlogout') }}" class="logout-btn">Logout</a>
+                    </div>
+                    {% else %}
+                        <a href="{{ url_for('adminlogin') }}" class="login"><i class="fa fa-user-o"></i> Login</a>
+                    {% endif %}
+                </div>
+            </div>
+        </nav>
+
+        <nav class="admin-nav">
+            <div class="admin-nav-container">
+                <div class="admin-nav-left">
+                    <i class="lni lni-dashboard-square-1 nav-icon" style="color: #1976d2; font-size: 2.4rem;"></i>
+                    <span class="logo">Admin Dashboard</span>
+                </div>
+                <div class="admin-links">
+                    <i class="fa fa-bell-o" aria-hidden="true"></i>
+                </div>
+            </div>
+        </nav>
+
+        <nav class="admin-tiles">
+            <div class="tiles">
+                <a href="#" class="admin-tiles-links active" id="dashboard-link">Dashboard</a>
+                <a href="#" class="admin-tiles-links" id="reports-link">Reports</a>
+                <a href="#" class="admin-tiles-links">Users</a>
+                <a href="#" class="admin-tiles-links">Settings</a>
+            </div>
+        </nav>
+
+        <section class="admin-dashboard-main" id="dashboard-tab">
+            <div class="admin-dashboard-main-content">
+                <div class="admin-dashboard-main-cards">
+                    <div class="admin-dashboard-main-card">
+                        <h3>Pending Reports</h3>
+                        <p class="dashboard-value">48</p>
+                    </div>
+                    <div class="admin-dashboard-main-card">
+                        <h3>In Progress</h3>
+                        <p class="dashboard-value">124</p>
+                    </div>
+                    <div class="admin-dashboard-main-card">
+                        <h3>Resolved Issues</h3>
+                        <p class="dashboard-value">847</p>
+                    </div>
+                    <div class="admin-dashboard-main-card">
+                        <h3>Response Rate</h3>
+                        <p class="dashboard-value">92%</p>
+                    </div>
+                </div>
+                <div class="admin-dashboard-charts">
+                    <div class="admin-dashboard-chart">
+                        <div class="admin-dashboard-chart-header">
+                            <h4>Reports by Category</h4>
+                            <label>
+                                <select class="map-dropdown" id="category-filter">
+                                    <option value="days">Last 7 Days</option>
+                                    <option value="days">Last 30 Days</option>
+                                    <option value="days">Last 90 Days</option>
+                                </select>
+                            </label>
+                        </div>
+                        <div class="dashboard-chart-placeholder">
+                            <img src="https://dummyimage.com/400x150/4a90e2/fff&text=Pie+Chart+Placeholder" alt="Reports by Category Chart" style="width:100%; height: 400px;border-radius:8px; ">
+                        </div>
+                    </div>
+                    <div class="admin-dashboard-chart">
+                        <div class="admin-dashboard-chart-header">
+                            <h4>Resolution Time Trends</h4>
+                            <label>
+                                <select class="map-dropdown" id="category-filter">
+                                    <option value="days">Last 7 Days</option>
+                                    <option value="days">Last 30 Days</option>
+                                    <option value="days">Last 90 Days</option>
+                                </select>
+                            </label>
+                        </div>
+                        <div class="dashboard-chart-placeholder">
+                            <img src="https://dummyimage.com/400x150/4a90e2/fff&text=Pie+Chart+Placeholder" alt="Reports by Category Chart" style="width:100%; height: 400px;border-radius:8px; ">
+                        </div>
+                    </div>
+                </div>
+                <div class="recent-activity">
+                    <div class="recent-activity-header">
+                        <h3>Recent Activity</h3>
+                    </div>
+                    <ul class="recent-activity-list">
+                        <li>
+                            <span class="activity-user">John Doe</span>
+                            <span class="activity-action">resolved issue</span>
+                            <span class="activity-issue">Power Outage</span>
+                            <span class="activity-time">2 minutes ago</span>
+                        </li>
+                        <li>
+                            <span class="activity-user">Jane Smith</span>
+                            <span class="activity-action">updated status of</span>
+                            <span class="activity-issue">Pothole on Main St</span>
+                            <span class="activity-time">10 minutes ago</span>
+                        </li>
+                        <li>
+                            <span class="activity-user">Admin</span>
+                            <span class="activity-action">marked as urgent</span>
+                            <span class="activity-issue">Water Leak</span>
+                            <span class="activity-time">25 minutes ago</span>
+                        </li>
+                        <li>
+                            <span class="activity-user">John Doe</span>
+                            <span class="activity-action">created new report</span>
+                            <span class="activity-issue">Streetlight Out</span>
+                            <span class="activity-time">1 hour ago</span>
+                        </li>
+                        <li>
+                            <span class="activity-user">Jane Smith</span>
+                            <span class="activity-action">resolved issue</span>
+                            <span class="activity-issue">Overflowing Garbage</span>
+                            <span class="activity-time">2 hours ago</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section class="admin-reports-main" id="reports-tab" style="display: none;">
+            <div class="admin-dashboard-main-content">
+                <h2 class="reports-title">Report Management</h2>
+                <p class="reports-desc">Manage and respond to community reports.</p>
+                <div class="reports-controls">
+                    <input type="text" class="reports-search" placeholder="Search report">
+                    <select class="reports-dropdown">
+                        <option value="all">All Categories</option>
+                        <option value="road">Road</option>
+                        <option value="electricity">Electricity</option>
+                        <option value="sanitation">Sanitation</option>
+                    </select>
+                    <select class="reports-dropdown">
+                        <option value="all">All Statuses</option>
+                        <option value="pending">Pending</option>
+                        <option value="in-progress">In Progress</option>
+                        <option value="resolved">Resolved</option>
+                    </select>
+                </div>
+                <div class="admin-reports-table-container">
+                    <table class="admin-reports-table">
+                        <thead>
+                            <tr>
+                                <th>REPORTS ID</th>
+                                <th>ISSUE</th>
+                                <th>LOCATION</th>
+                                <th>REPORTER</th>
+                                <th>STATUS</th>
+                                <th>PRIORITY</th>
+                                <th>DATE</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for report in reports %}
+                            <tr>
+                                <td>{{ report._id }}</td>
+                                <td>{{ report.title }}</td>
+                                <td>{{ report.location }}</td>
+                                <td>{{ report.reporter_name }}</td>
+                                <td>
+                                    <form method="POST" action="{{ url_for('update_report_status', report_id=report._id) }}">
+                                        <select class="status" name="status" onchange="this.form.submit()">
+                                            <option value="pending" {% if report.status == 'pending' %}selected{% endif %}>Pending</option>
+                                            <option value="in-progress" {% if report.status == 'in-progress' %}selected{% endif %}>In Progress</option>
+                                            <option value="resolved" {% if report.status == 'resolved' %}selected{% endif %}>Resolved</option>
+                                        </select>
+                                    </form>
+                                </td>
+                                <td>
+                                    <form method="POST" action="{{ url_for('update_report_priority', report_id=report._id) }}">
+                                        <select class="priority" name="priority" onchange="this.form.submit()">
+                                            <option value="low" {% if report.priority == 'low' %}selected{% endif %}>Low</option>
+                                            <option value="medium" {% if report.priority == 'medium' %}selected{% endif %}>Medium</option>
+                                            <option value="high" {% if report.priority == 'high' %}selected{% endif %}>High</option>
+                                            <option value="urgent" {% if report.priority == 'urgent' %}selected{% endif %}>Urgent</option>
+                                        </select>
+                                    </form>
+                                </td>
+                                
+                                
+                                <td>
+                                    {% if report.created_at %}
+                                        {{ report.created_at }}
+                                    {% else %}
+                                        N/A
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+        <script src="/static/admin/admin.js"></script>
+    </body>
+</html>
