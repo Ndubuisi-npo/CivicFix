@@ -7,19 +7,21 @@ from pymongo.server_api import ServerApi
 from bson.objectid import ObjectId
 from datetime import datetime
 
-client = MongoClient("mongodb+srv://detonate017:dWak9n6RkDKsfWUW@civicfix.qs2fsem.mongodb.net/?retryWrites=true&w=majority&appName=CivicFix", server_api=ServerApi('1'))
 
+load_dotenv('.env')  # Load environment variables from .env file
+
+app = Flask(__name__)
+app.secret_key = os.getenv("SECRET_KEY")
+
+MONGO_URI = os.getenv("MONGO_URI")  # ✅ This must be the full connection string
+# print("MONGO_URI from env:", MONGO_URI)
+client = MongoClient(MONGO_URI, server_api=ServerApi('1'))  # ✅ Correct usage
 
 db = client["CivicFix"]
 users_col = db["users"]
 admins_col = db["admins"]
 reports_col = db["reports"]
 activities_col = db["activities"]
-
-app = Flask(__name__)
-load_dotenv()
-app.secret_key = os.getenv("SECRET_KEY")
-MONGO_URI = os.getenv("MONGO_URI")  # Required for session management
 
 @app.route('/')
 def index():
