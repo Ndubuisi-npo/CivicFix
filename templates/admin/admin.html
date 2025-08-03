@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <link rel="stylesheet" href="https://cdn.lineicons.com/5.0/lineicons.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
        <nav class="navbar">
@@ -53,21 +54,21 @@
             <div class="admin-dashboard-main-content">
                 <div class="admin-dashboard-main-cards">
                     <div class="admin-dashboard-main-card">
-                        <h3>Pending Reports</h3>
-                        <p class="dashboard-value">48</p>
-                    </div>
-                    <div class="admin-dashboard-main-card">
-                        <h3>In Progress</h3>
-                        <p class="dashboard-value">124</p>
-                    </div>
-                    <div class="admin-dashboard-main-card">
-                        <h3>Resolved Issues</h3>
-                        <p class="dashboard-value">847</p>
-                    </div>
-                    <div class="admin-dashboard-main-card">
-                        <h3>Response Rate</h3>
-                        <p class="dashboard-value">92%</p>
-                    </div>
+                    <h3>Total Reports</h3>
+                    <p class="dashboard-value">{{ total_reports }}</p>
+                </div>
+                <div class="admin-dashboard-main-card">
+                    <h3>Pending</h3>
+                    <p class="dashboard-value">{{ pending }}</p>
+                </div>
+                <div class="admin-dashboard-main-card">
+                    <h3>In Progress</h3>
+                    <p class="dashboard-value">{{ in_progress }}</p>
+                </div>
+                <div class="admin-dashboard-main-card">
+                    <h3>Resolution Rate</h3>
+                    <p class="dashboard-value">{{ resolution_rate }}%</p>
+                </div>
                 </div>
                 <div class="admin-dashboard-charts">
                     <div class="admin-dashboard-chart">
@@ -82,7 +83,7 @@
                             </label>
                         </div>
                         <div class="dashboard-chart-placeholder">
-                            <img src="https://dummyimage.com/400x150/4a90e2/fff&text=Pie+Chart+Placeholder" alt="Reports by Category Chart" style="width:100%; height: 400px;border-radius:8px; ">
+                            <canvas id="categoryPieChart" width="400" height="400"></canvas>
                         </div>
                     </div>
                     <div class="admin-dashboard-chart">
@@ -97,7 +98,7 @@
                             </label>
                         </div>
                         <div class="dashboard-chart-placeholder">
-                            <img src="https://dummyimage.com/400x150/4a90e2/fff&text=Pie+Chart+Placeholder" alt="Reports by Category Chart" style="width:100%; height: 400px;border-radius:8px; ">
+                            <canvas id="resolutionLineChart" width="400" height="400"></canvas>
                         </div>
                     </div>
                 </div>
@@ -106,36 +107,14 @@
                         <h3>Recent Activity</h3>
                     </div>
                     <ul class="recent-activity-list">
+                        {% for activity in recent_activity %}
                         <li>
-                            <span class="activity-user">John Doe</span>
-                            <span class="activity-action">resolved issue</span>
-                            <span class="activity-issue">Power Outage</span>
-                            <span class="activity-time">2 minutes ago</span>
+                            <span class="activity-user">{{ activity.user }}</span>
+                            <span class="activity-action">{{ activity.action }}</span>
+                            <span class="activity-issue">{{ activity.details }}</span>
+                            <span class="activity-time">{{ activity.timestamp.strftime('%Y-%m-%d %H:%M') }}</span>
                         </li>
-                        <li>
-                            <span class="activity-user">Jane Smith</span>
-                            <span class="activity-action">updated status of</span>
-                            <span class="activity-issue">Pothole on Main St</span>
-                            <span class="activity-time">10 minutes ago</span>
-                        </li>
-                        <li>
-                            <span class="activity-user">Admin</span>
-                            <span class="activity-action">marked as urgent</span>
-                            <span class="activity-issue">Water Leak</span>
-                            <span class="activity-time">25 minutes ago</span>
-                        </li>
-                        <li>
-                            <span class="activity-user">John Doe</span>
-                            <span class="activity-action">created new report</span>
-                            <span class="activity-issue">Streetlight Out</span>
-                            <span class="activity-time">1 hour ago</span>
-                        </li>
-                        <li>
-                            <span class="activity-user">Jane Smith</span>
-                            <span class="activity-action">resolved issue</span>
-                            <span class="activity-issue">Overflowing Garbage</span>
-                            <span class="activity-time">2 hours ago</span>
-                        </li>
+                        {% endfor %}
                     </ul>
                 </div>
             </div>
@@ -220,5 +199,13 @@
         <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
         <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
         <script src="/static/admin/admin.js"></script>
+         <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+        <script>
+            window.categoryPercentages = {{ category_percentages | tojson | safe}};
+        </script>
+        <script>
+            window.resolutionMonths = {{ months | tojson | safe }};
+            window.resolutionAverages = {{ avg_resolution_times | tojson | safe }};
+        </script>
     </body>
 </html>

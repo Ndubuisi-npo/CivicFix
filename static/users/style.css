@@ -705,11 +705,11 @@ form input, form textarea, form select {
 }
 
 .dashboard-bullet.road {
-  background: #446cef;
+  background: #facc15;
 }
 
 .dashboard-bullet.electricity {
-  background: #facc15;
+  background: #446cef;
 }
 
 .dashboard-bullet.sanitation {

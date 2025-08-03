@@ -5,7 +5,8 @@ from pymongo import MongoClient
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
 from bson.objectid import ObjectId
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
+from collections import Counter, defaultdict
 
 
 load_dotenv('.env')  # Load environment variables from .env file
@@ -13,9 +14,8 @@ load_dotenv('.env')  # Load environment variables from .env file
 app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY")
 
-MONGO_URI = os.getenv("MONGO_URI")  # ✅ This must be the full connection string
-# print("MONGO_URI from env:", MONGO_URI)
-client = MongoClient(MONGO_URI, server_api=ServerApi('1'))  # ✅ Correct usage
+MONGO_URI = os.getenv("MONGO_URI")  # ✅ Use Atlas connection string from .env
+client = MongoClient(MONGO_URI)      # ✅ Use Atlas
 
 db = client["CivicFix"]
 users_col = db["users"]
@@ -29,13 +29,29 @@ def index():
     resolved_reports = reports_col.count_documents({'status': 'resolved'})
     in_progress = reports_col.count_documents({'status': 'in-progress'})
     urgent = reports_col.count_documents({'status': 'urgent'})
-    recent_reports = list(reports_col.find().sort('created_at', -1).limit(5))
+    recent_reports = list(reports_col.find({'visibility': {'$ne': 'private'}}).sort('created_at', -1).limit(5))
+    resolution_rate = 0
+    if total_reports > 0:
+        resolution_rate = round((resolved_reports / total_reports) * 100)
+
+    # Only public reports for index
+    public_reports = list(reports_col.find({'visibility': {'$ne': 'private'}}))
+    category_list = ['road', 'electricity', 'sanitation']
+    category_counts = Counter([r.get('issue_type', 'other') for r in public_reports])
+    total_category = sum(category_counts.get(cat, 0) for cat in category_list)
+    category_percentages = {
+        cat: round((category_counts.get(cat, 0) / total_category) * 100, 2) if total_category else 0
+        for cat in category_list
+    }
+
     return render_template('users/index.html',
                            total_reports=total_reports,
                            resolved_reports=resolved_reports,
                            in_progress=in_progress,
                            urgent=urgent,
-                           recent_reports=recent_reports)
+                           resolution_rate=resolution_rate,
+                           recent_reports=recent_reports,
+                           category_percentages=category_percentages)
 
 @app.route('/report')
 def report():
@@ -119,8 +135,63 @@ def userlogout():
 
 @app.route('/admin')
 def admin():
+    total_reports = reports_col.count_documents({})
+    pending = reports_col.count_documents({'status': 'pending'})
+    in_progress = reports_col.count_documents({'status': 'in-progress'})
+    resolved = reports_col.count_documents({'status': 'resolved'})
+    urgent = reports_col.count_documents({'priority': 'urgent'})
+
+    # Calculate resolution rate
+    resolution_rate = 0
+    if total_reports > 0:
+        resolution_rate = round((resolved / total_reports) * 100)
+
+    # Recent activity (last 10 actions)
+    recent_activity = list(activities_col.find().sort('timestamp', -1).limit(10))
+
+    # All reports for admin
+    all_reports = list(reports_col.find())
+    category_list = ['road', 'electricity', 'sanitation']
+    category_counts = Counter([r.get('issue_type', 'other') for r in all_reports])
+    total_category = sum(category_counts.get(cat, 0) for cat in category_list)
+    category_percentages = {
+        cat: round((category_counts.get(cat, 0) / total_category) * 100, 2) if total_category else 0
+        for cat in category_list
+    }
+
+    # Calculate monthly average resolution time (in days)
+    resolved_reports = reports_col.find({'status': 'resolved', 'resolved_at': {'$exists': True}})
+    monthly_resolution = defaultdict(list)
+    for report in resolved_reports:
+        created = report.get('created_at')
+        resolved = report.get('resolved_at')
+        if created and resolved:
+            month = resolved.strftime('%Y-%m')
+            delta = resolved - created
+            days = delta.total_seconds() / 86400
+            monthly_resolution[month].append(days)
+    # Prepare data for chart: sorted by month
+    months = sorted(monthly_resolution.keys())
+    avg_resolution_times = [
+        round(sum(monthly_resolution[m]) / len(monthly_resolution[m]), 2)
+        for m in months
+    ]
+
     reports = list(reports_col.find().sort('created_at', -1))
-    return render_template('admin/admin.html', reports=reports)
+    return render_template(
+        'admin/admin.html',
+        reports=reports,
+        total_reports=total_reports,
+        pending=pending,
+        in_progress=in_progress,
+        resolved=resolved,
+        urgent=urgent,
+        resolution_rate=resolution_rate,
+        recent_activity=recent_activity,
+        category_percentages=category_percentages,
+        months=months,
+        avg_resolution_times=avg_resolution_times,
+    )
 
 @app.route('/adminlogin', methods=['GET', 'POST'])
 def adminlogin():
@@ -207,9 +278,10 @@ def submit_report():
     description = request.form['description']
     location = request.form['location']
     issue_type = request.form['issue-type']
+    visibility = request.form.get('visibility', 'public')
     reporter_name = session['user_name']
 
-    reports_col.insert_one({
+    report_id = reports_col.insert_one({
         'issue_type': issue_type,
         'title': title,
         'description': description,
@@ -217,15 +289,29 @@ def submit_report():
         'reporter_name': reporter_name,
         'status': 'pending',
         'priority': 'medium',
-        'created_at': datetime.utcnow()
+        'created_at': datetime.utcnow(),
+        'visibility': visibility
+    }).inserted_id
+
+    # Log activity
+    activities_col.insert_one({
+        'action': 'submitted',
+        'report_id': str(report_id),
+        'user': reporter_name,
+        'timestamp': datetime.utcnow(),
+        'details': f'Report "{title}" submitted'
     })
+
     flash('Report submitted successfully!')
     return redirect(url_for('index'))
 
 @app.route('/update_report_status/<report_id>', methods=['POST'])
 def update_report_status(report_id):
     status = request.form['status']
-    reports_col.update_one({'_id': ObjectId(report_id)}, {'$set': {'status': status}})
+    update_fields = {'status': status}
+    if status == 'resolved':
+        update_fields['resolved_at'] = datetime.utcnow()
+    reports_col.update_one({'_id': ObjectId(report_id)}, {'$set': update_fields})
     return redirect(url_for('admin'))
 
 @app.route('/update_report_priority/<report_id>', methods=['POST'])
@@ -235,4 +321,4 @@ def update_report_priority(report_id):
     return redirect(url_for('admin'))
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5001)
+    app.run(debug=True)

@@ -85,3 +85,58 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 });
+
+// ...existing code...
+
+document.addEventListener('DOMContentLoaded', function() {
+    // ...existing code...
+
+    // Pie chart for category percentages
+    if (window.categoryPercentages && document.getElementById('categoryPieChart')) {
+        const categoryData = window.categoryPercentages;
+        const labels = Object.keys(categoryData);
+        const data = Object.values(categoryData);
+
+        const backgroundColors = [
+            '#4a90e2', // Road
+            '#f5a623', // Electricity
+            '#7ed957', // Sanitation
+            '#d9534f', // Other
+        ];
+
+        const ctx = document.getElementById('categoryPieChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: data,
+                    backgroundColor: backgroundColors.slice(0, labels.length),
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    title: {
+                        display: true,
+                        
+                    },
+                    datalabels: {
+                        color: '#fff',
+                        font: {
+                            weight: 'bold',
+                            size: 16
+                        },
+                        formatter: function(value, context) {
+                            return value + '%';
+                        }
+                    }
+                }
+            },
+            plugins: [ChartDataLabels]
+        });
+    }
+});
