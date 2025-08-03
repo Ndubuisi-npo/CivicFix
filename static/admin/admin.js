@@ -35,11 +35,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 
-// ...existing code...
-
 document.addEventListener('DOMContentLoaded', function () {
-    // ...existing code...
-
     // Pie chart for category percentages
     if (window.categoryPercentages && document.getElementById('categoryPieChart')) {
         const categoryData = window.categoryPercentages;
@@ -134,5 +130,44 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             }
         });
+    }
+});
+
+document.addEventListener('DOMContentLoaded', function () {
+    const searchInput = document.getElementById('reports-search');
+    const table = document.getElementById('admin-reports-table');
+    const categoryDropdown = document.querySelectorAll('.reports-dropdown')[0]; // First dropdown is category
+    const statusDropdown = document.querySelectorAll('.reports-dropdown')[1]; // Second dropdown is status
+
+    // Define keywords for each category
+    const categoryKeywords = {
+        road: ['road', 'pothole', 'potholes', 'road block', 'blockage', 'asphalt', 'highway', 'street', 'intersection'],
+        electricity: ['electricity', 'light', 'power', 'power failure', 'outage', 'transformer', 'electrical', 'lamp', 'blackout'],
+        sanitation: ['sanitation', 'garbage', 'waste', 'sewer', 'bad smell', 'bad smells', 'trash', 'refuse', 'drain', 'dirty', 'filth']
+    };
+
+    function filterTable() {
+        const filter = searchInput.value.toLowerCase();
+        const category = categoryDropdown.value;
+        const status = statusDropdown.value;
+        const rows = table.querySelectorAll('tbody tr');
+        rows.forEach(row => {
+            const text = row.textContent.toLowerCase();
+            const statusCell = row.querySelector('select.status');
+            const rowStatus = statusCell ? statusCell.value : '';
+            let matchesCategory = true;
+            if (category !== 'all') {
+                matchesCategory = categoryKeywords[category].some(keyword => text.includes(keyword));
+            }
+            const matchesStatus = (status === 'all') || (rowStatus === status);
+            const matchesText = text.includes(filter);
+            row.style.display = (matchesCategory && matchesStatus && matchesText) ? '' : 'none';
+        });
+    }
+
+    if (searchInput && table && categoryDropdown && statusDropdown) {
+        searchInput.addEventListener('keyup', filterTable);
+        categoryDropdown.addEventListener('change', filterTable);
+        statusDropdown.addEventListener('change', filterTable);
     }
 });

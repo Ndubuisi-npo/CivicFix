@@ -125,7 +125,7 @@
                 <h2 class="reports-title">Report Management</h2>
                 <p class="reports-desc">Manage and respond to community reports.</p>
                 <div class="reports-controls">
-                    <input type="text" class="reports-search" placeholder="Search report">
+                    <input type="text" class="reports-search" id="reports-search" placeholder="Search report">
                     <select class="reports-dropdown">
                         <option value="all">All Categories</option>
                         <option value="road">Road</option>
@@ -140,7 +140,7 @@
                     </select>
                 </div>
                 <div class="admin-reports-table-container">
-                    <table class="admin-reports-table">
+                    <table class="admin-reports-table" id="admin-reports-table">
                         <thead>
                             <tr>
                                 <th>REPORTS ID</th>
@@ -149,6 +149,7 @@
                                 <th>REPORTER</th>
                                 <th>STATUS</th>
                                 <th>PRIORITY</th>
+                                <th>IMAGE</th>
                                 <th>DATE</th>
                             </tr>
                         </thead>
@@ -178,8 +179,24 @@
                                         </select>
                                     </form>
                                 </td>
-                                
-                                
+                                <!-- Image column -->
+                                <td>
+                                    {% if report.photos %}
+                                        {% for media in report.photos %}
+                                            {% if media.endswith('.mp4') or media.endswith('.mov') or media.endswith('.avi') or media.endswith('.webm') %}
+                                                <a href="/{{ media }}" target="_blank" title="View Video">
+                                                    <img src="/static/admin/video-icon.png" alt="Video" style="width:40px;height:40px;object-fit:cover;margin:2px;border-radius:4px; background:#222;">
+                                                </a>
+                                            {% else %}
+                                                <a href="/{{ media }}" target="_blank">
+                                                    <img src="/{{ media }}" alt="Report Media" style="width:40px;height:40px;object-fit:cover;margin:2px;border-radius:4px;">
+                                                </a>
+                                            {% endif %}
+                                        {% endfor %}
+                                    {% else %}
+                                        N/A
+                                    {% endif %}
+                                </td>
                                 <td>
                                     {% if report.created_at %}
                                         {{ report.created_at }}

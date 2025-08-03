@@ -7,6 +7,7 @@ from pymongo.server_api import ServerApi
 from bson.objectid import ObjectId
 from datetime import datetime, timezone, timedelta
 from collections import Counter, defaultdict
+from werkzeug.utils import secure_filename
 
 
 load_dotenv('.env')  # Load environment variables from .env file
@@ -22,6 +23,14 @@ users_col = db["users"]
 admins_col = db["admins"]
 reports_col = db["reports"]
 activities_col = db["activities"]
+
+UPLOAD_FOLDER = os.path.join('static', 'uploads')
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'mp4'}
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 @app.route('/')
 def index():
@@ -44,6 +53,16 @@ def index():
         for cat in category_list
     }
 
+    # Calculate monthly report counts (for public reports only)
+    monthly_reports = defaultdict(int)
+    for report in public_reports:
+        created = report.get('created_at')
+        if created:
+            month = created.strftime('%Y-%m')
+            monthly_reports[month] += 1
+    months = sorted(monthly_reports.keys())
+    monthly_counts = [monthly_reports[m] for m in months]
+
     return render_template('users/index.html',
                            total_reports=total_reports,
                            resolved_reports=resolved_reports,
@@ -51,7 +70,9 @@ def index():
                            urgent=urgent,
                            resolution_rate=resolution_rate,
                            recent_reports=recent_reports,
-                           category_percentages=category_percentages)
+                           category_percentages=category_percentages,
+                           months=months,
+                           monthly_counts=monthly_counts)
 
 @app.route('/report')
 def report():
@@ -281,6 +302,17 @@ def submit_report():
     visibility = request.form.get('visibility', 'public')
     reporter_name = session['user_name']
 
+    # Handle file uploads
+    photos = []
+    if 'photos' in request.files:
+        files = request.files.getlist('photos')
+        for file in files:
+            if file and allowed_file(file.filename):
+                filename = secure_filename(f"{datetime.utcnow().timestamp()}_{file.filename}")
+                filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                file.save(filepath)
+                photos.append(filepath.replace('\\', '/'))  # For Windows path compatibility
+
     report_id = reports_col.insert_one({
         'issue_type': issue_type,
         'title': title,
@@ -290,7 +322,8 @@ def submit_report():
         'status': 'pending',
         'priority': 'medium',
         'created_at': datetime.utcnow(),
-        'visibility': visibility
+        'visibility': visibility,
+        'photos': photos
     }).inserted_id
 
     # Log activity

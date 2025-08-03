@@ -139,4 +139,52 @@ document.addEventListener('DOMContentLoaded', function() {
             plugins: [ChartDataLabels]
         });
     }
+    
+    // Line chart for monthly report trends
+    if (window.monthlyReportMonths && window.monthlyReportCounts && document.getElementById('monthlyReportLineChart')) {
+        const ctx = document.getElementById('monthlyReportLineChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: window.monthlyReportMonths,
+                datasets: [{
+                    label: 'Reports Submitted',
+                    data: window.monthlyReportCounts,
+                    borderColor: '#ef4444',
+                    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                    fill: true,
+                    tension: 0.3,
+                    pointRadius: 5,
+                    pointBackgroundColor: '#ef4444'
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top'
+                    },
+                    title: {
+                        display: true,
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Reports'
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Month'
+                        }
+                    }
+                }
+            }
+        });
+    }
 });
